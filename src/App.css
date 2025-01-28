@@ -6,6 +6,7 @@
   width: 100%;
   align-self: start;
   background-color: #24292e;
+  overflow-x: hidden;
 }
 
 .hover-shine {
@@ -134,7 +135,6 @@ ul {
 
 .content h2 {
   text-align: center;
-  width: min-content;
   justify-self: center;
   display: flex;
   align-items: center;
