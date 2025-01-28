@@ -4,32 +4,98 @@ import httpGetAsync from "./httpGetAsync.ts";
 import {FaAngleLeft, FaAngleRight} from "react-icons/fa6";
 import {IoPlayCircle} from "react-icons/io5";
 import {FaGithub, FaLink, FaSitemap} from "react-icons/fa";
+import {IconType} from "react-icons";
+import {BiLoaderCircle} from "react-icons/bi";
+
+function useMousePosition() {
+  const [
+    mousePosition,
+    setMousePosition
+  ] = React.useState({ x: 0, y: 0 });
+  React.useEffect(() => {
+    const updateMousePosition = (ev: {clientX: number, clientY: number}) => {
+      setMousePosition({ x: ev.clientX, y: ev.clientY });
+    };
+    window.addEventListener('mousemove', updateMousePosition);
+    return () => {
+      window.removeEventListener('mousemove', updateMousePosition);
+    };
+  }, []);
+  return mousePosition;
+}
+
+function getWindowDimensions() {
+  const { innerWidth: width, innerHeight: height } = window;
+  return {
+    width,
+    height
+  };
+}
+function useWindowDimensions() {
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowDimensions;
+}
 
 export default function App() {
+  type Data = { [id: string]: Data };
+
   const databaseUrl = "https://api.github.com/repos/Kostya778899/portfolio-data-1/git/trees/main?recursive=1";
   const rawUrl = "https://raw.githubusercontent.com/Kostya778899/portfolio-data-1/main/";
 
-  const [title, setTitle] = useState("Portfolio");
-  const [description, setDescription] = useState("desc");
+  const maxDescription = 15;
 
-  const [data, setData] = useState({});
-  const [fullscreenContent, setFullscreenContent] = useState([]);
+  const [title, /*setTitle*/] = useState("Portfolio");
+  //const [description, setDescription] = useState("desc");
+
+  const [data, setData] = useState<Data>({});
+  const [fullscreenContent, setFullscreenContent] = useState<string[]>([]);
   const [showFullscreenContentIndex, setShowFullscreenContentIndex] = useState(0);
+  const [load, setLoad] = useState(true);
+  const mousePosition = useMousePosition();
+  const windowSize = useWindowDimensions();
 
   useEffect(() => {
     httpGetAsync(databaseUrl, (response: string) => {
-      JSON.parse(response).tree.map((e: string) => {
-        function toDataTree(data, path: string) {
+      const responseData: Data = {};
+      let loads = 0;
+      JSON.parse(response).tree.map((e: {path: string}) => {
+        function toDataTree(data: Data, path: string) {
           const slashIndex = path.indexOf("/");
           if (slashIndex >= 0)
             toDataTree(data[path.slice(0, slashIndex)], path.slice(slashIndex + 1));
-          else
+          else {
             data[path] = {};
+            const localRawUrl = `${rawUrl}${e.path}`;
+            if (path.match(/\.txt$/)) {
+              loads++;
+              httpGetAsync(localRawUrl, response => {
+                data[path][response] = {};
+                loads--;
+              });
+            } else if (path.match(/\.(png|jpg|jpeg|webp|mp4)$/)) {
+              data[path][localRawUrl] = {};
+            }
+            if (loads === 0) {
+              setData(responseData);
+              setLoad(false);
+            }
+          }
         }
 
-        toDataTree(data, e.path);
-        setData(data);
+        toDataTree(responseData, e.path);
       });
+      //setData(responseData);
+      //setLoad(false);
     });
   }, []);
 
@@ -39,6 +105,17 @@ export default function App() {
 
   return (
     <>
+      {load && (() => {
+        const depth = 0.1;
+        const position = {
+          x: (mousePosition.x - windowSize.width / 2) * depth,
+          y: (mousePosition.y - windowSize.height / 2) * depth
+        };
+
+        return <BiLoaderCircle className={"loader"} size={100} style={{translate: `${position.x}px ${position.y}px`}}/>
+      })()}
+      {load && <BiLoaderCircle className={"loader"} size={100} style={{translate:
+          `${(mousePosition.x - windowSize.width / 2) * 0.1}px ${(mousePosition.y - windowSize.height / 2) * 0.1}px`}}/>}
       <div className="top-bar">
         <h1>{title}</h1>
         <ul>{["Projects", "About"].map((category) => <li key={category}>
@@ -56,23 +133,34 @@ export default function App() {
             .replace("3 d", " 3D")}</h3>
 
           {(() => {
-            const links = Object.keys(data[category][project]).filter(e => e.match("\\.txt$"));
-            const icons = {
+            const icons: {[id: string]: IconType} = {
               "link": FaLink,
               "github": FaGithub,
               "git": FaGithub,
               "site": FaSitemap,
             };
+            const links = Object.keys(data[category][project])
+              .filter(e => e.match(`^(${Object.keys(icons).join("|")})\\.txt$`));
 
-            return <div className={"links"}>{links.map(link =>
-              React.createElement(icons[link.slice(0, link.lastIndexOf("."))], {
-                key: link, size: 25, onClick: () => {
-                  httpGetAsync(`${rawUrl}${category}/${project}/${link}`, response => {
-                    window.open(response, "_blank");
-                  });
-                }
-              })
-            )}</div>
+            const description = Object.keys(data[category][project]).find(e => e === "description.txt") ?
+              Object.keys(data[category][project]["description.txt"])[0] : "";
+
+            return <>
+              {description && <>
+                <p className={"description"}>{
+                  description.length <= maxDescription ? description :
+                    description.substring(0, maxDescription - 3) + "..."
+                }</p>
+                <p className={"full-description"}>{description}</p>
+              </>}
+              {/*<MdOutlineDescription className={"description"} size={25}/>*/}
+              <div className={"links"}>{links.map(link =>
+                React.createElement(icons[link.slice(0, link.lastIndexOf("."))], {
+                  key: link, size: 25, onClick: () =>
+                    window.open(Object.keys(data[category][project][link])[0], "_blank")
+                })
+              )}</div>
+            </>
           })()}
 
           {(() => {
@@ -83,18 +171,13 @@ export default function App() {
             return <ul key={project} onClick={() => setFullscreenContent(urls)}>{urls.map((url) =>
               url.match("\\.mp4$") &&
                 <div key={url} className={"video"}>
-                    <video src={url} autoPlay={true} loop={true} muted={true} controls={false}/>
+                <video src={url} autoPlay={true} loop={true} muted={true} controls={false}/>
                     <IoPlayCircle className={"play-icon"} size={50}/>
                 </div>
               ||
                 <img key={url} src={url}/>
             )}</ul>
           })()}
-
-          {/*<ul>{Object.keys(data[category][project]).map((image) =>
-            image.slice(image.lastIndexOf(".")) === ".webp" &&
-              <img key={image} src={`${rawUrl}${category}/${project}/${image}`} tabIndex={0}/>
-          )}</ul>*/}
         </li>)}</ul>
       </div>)}</div>
       {fullscreenContent.length > 0 &&

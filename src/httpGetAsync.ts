@@ -1,4 +1,4 @@
-export default function httpGetAsync(theUrl, callback)
+export default function httpGetAsync(theUrl: string, callback: (response: string) => void)
 {
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function() {
