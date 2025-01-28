@@ -5,7 +5,7 @@
   /*text-align: center;*/
   width: 100%;
   align-self: start;
-  background-color: #2C3639;
+  background-color: #24292e;
 }
 
 .hover-shine {
@@ -97,8 +97,9 @@ ul {
   justify-content: start;
   align-items: center;
   gap: 4rem;
-  background-color: #3F4E4F;
+  background-color: #2b3137;
   padding: 0.5rem 3rem;
+  border-bottom: 1px solid #fafbfc;
 }
 
 .content {
@@ -117,7 +118,7 @@ ul {
 .category > ul {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 16rem;
+  grid-auto-rows: auto;
   gap: 1rem;
 }
 @media(max-width: 1200px) {
@@ -133,24 +134,53 @@ ul {
 
 .content h2 {
   text-align: center;
+  width: min-content;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  /*background-color: #2b3137;*/
+  transform-style: preserve-3d;
+  background-color: #24292e;
+  padding: 0 1rem;
+}
+.content h2::after {
+  content: '';
+  position: absolute;
+  left: -1000px;
+  right: -1000px;
+  transform: translateZ(-1px);
+  display: inline-block;
+  height: 1px;
+  background-color: #fafbfc;
 }
 
 .project {
-  background-color: #A27B5C;
+  background-color: #2b3137;
   border-radius: 1rem;
-  padding: 1rem 1rem 1rem 1rem;
+  padding: 1rem 0 1rem 0;
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr;
   grid-template-areas:
     "name description links"
     "photos photos photos";
+  border: 1px solid #fafbfc;
+  position: relative;
+  row-gap: 1.8rem;
+}
+.project .line {
+  margin-top: 3.5rem;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #fafbfc;
+  position: absolute;
 }
 
 .project > h3 {
   grid-area: name;
   align-self: center;
-  margin: 0;
+  margin: 0 0 0 1rem;
 }
 
 .project > .links {
@@ -159,13 +189,14 @@ ul {
   justify-self: end;
   display: flex;
   gap: 1rem;
+  margin: 0 1rem 0 0;
 }
 .project > .links > * {
   cursor: pointer;
   transition: 0.2s;
 }
 .project > .links > *:hover {
-  color: #646cff;
+  color: #0d74e7;
 }
 
 .description {
@@ -175,10 +206,11 @@ ul {
 }
 .full-description {
   /*display: none;*/
-  margin: 30px 0 0 0;
+  margin: 55px 0 0 1rem;
   position: absolute;
   z-index: 1;
-  background-color: #242424;
+  background-color: #36373a;
+  border: 1px solid #fafbfc;
   border-radius: 1rem;
   padding: 1rem;
   max-width: 300px;
@@ -194,10 +226,12 @@ ul {
   width: 20px;
   height: 20px;
   border-radius: 0;
-  background-color: #242424;
+  background-color: #36373a;
+  border-top: 1px solid #fafbfc;
+  border-left: 1px solid #fafbfc;
   transform: rotate(45deg);
   left: 50%;
-  top: -7px;
+  top: -10px;
 }
 .description:hover + .full-description {
   display: inline;
@@ -219,6 +253,7 @@ ul {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+  margin: 0 1rem;
 }
 .project img {
   height: 100%;
@@ -234,6 +269,14 @@ ul {
 }
 .project .video .play-icon {
   position: absolute;
+  transition: 0.2s;
+}
+.project .video video:hover + .play-icon {
+  scale: 1.1;
+}
+.project .video .play-icon:hover {
+  color: #2dba4e;
+  scale: 1.1;
 }
 
 @keyframes show {

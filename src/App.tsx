@@ -118,9 +118,9 @@ export default function App() {
           `${(mousePosition.x - windowSize.width / 2) * 0.1}px ${(mousePosition.y - windowSize.height / 2) * 0.1}px`}}/>}
       <div className="top-bar">
         <h1>{title}</h1>
-        <ul>{["Projects", "About"].map((category) => <li key={category}>
+        {/*<ul>{["Projects", "About"].map((category) => <li key={category}>
           <button className="hover-shine">{category}</button>
-        </li>)}</ul>
+        </li>)}</ul>*/}
       </div>
       <div className="content">{Object.keys(data).filter(e => !e.includes(".idea")).map((category) => <div className="category" key={category}>
         <h2>{category}</h2>
@@ -162,6 +162,8 @@ export default function App() {
               )}</div>
             </>
           })()}
+
+          <div className="line"/>
 
           {(() => {
             const urls = Object.keys(data[category][project])
