@@ -1,11 +1,9 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import "./App.css";
 import httpGetAsync from "./httpGetAsync.ts";
 import {FaAngleLeft, FaAngleRight} from "react-icons/fa6";
-import ReactPlayer from "react-player";
 import {IoPlayCircle} from "react-icons/io5";
 import {FaGithub, FaLink, FaSitemap} from "react-icons/fa";
-import {l} from "vite/dist/node/types.d-aGj9QkWt";
 
 export default function App() {
   const databaseUrl = "https://api.github.com/repos/Kostya778899/portfolio-data-1/git/trees/main?recursive=1";
@@ -20,9 +18,7 @@ export default function App() {
 
   useEffect(() => {
     httpGetAsync(databaseUrl, (response: string) => {
-      let data = {};
-
-      JSON.parse(response).tree.map((e) => {
+      JSON.parse(response).tree.map((e: string) => {
         function toDataTree(data, path: string) {
           const slashIndex = path.indexOf("/");
           if (slashIndex >= 0)
